@@ -41,7 +41,7 @@ jobs:
           git push
               
       - name: Build Astro Website
-        uses: withastro/action@v3
+        uses: withastro/action@v5
             
       - name: Deploy to GitHub Pages
         id: deployment
