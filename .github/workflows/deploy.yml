@@ -1,0 +1,48 @@
+name: Hourly Auto Blog Poster
+on:
+  schedule:
+    - cron: '0 * * * *' # Runs at minute zero of every hour
+  workflow_dispatch: # Gives you a manual run button
+    
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+    
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout your code
+        uses: actions/checkout@v4
+            
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+              
+      - name: Install dependencies
+        run: npm install
+            
+      - name: Wake up the AI Robot
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node bot.js
+            
+      - name: Save the new article to GitHub
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add .
+          git commit -m "Automated hourly post" || echo "No changes"
+          git push
+              
+      - name: Build Astro Website
+        uses: withastro/action@v3
+            
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
